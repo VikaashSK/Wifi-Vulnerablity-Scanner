@@ -1,77 +1,76 @@
-ESP32 Wi-Fi Risk Analyzer
+Passive Wi‑Fi Scanner (ESP32)
 
-This project uses an ESP32 to scan nearby Wi-Fi networks and provide a basic security analysis. The program does not connect to any Wi-Fi networks. It only scans and reports information through the serial monitor.
+This is a small, passive Wi‑Fi scanner for the ESP32.
+It listens for nearby Wi‑Fi access points and prints basic details to the Serial Monitor. It does not connect to any networks.
 
-Features
+What it does
 
-Scans for all nearby Wi-Fi networks.
+Scans nearby Wi‑Fi networks (passive scan).
 
-Shows:
+For each network it shows:
 
 SSID (network name)
 
-BSSID (MAC address of the access point)
+BSSID (access point MAC address)
 
-RSSI (signal strength)
+RSSI (signal strength in dBm)
 
-Encryption type (Open, WEP, WPA, WPA2, WPA3)
+Basic encryption label (Open / Secure)
 
-Classifies networks as Low, Medium, or High risk.
+Flags and prints simple alerts:
 
-Prints results in two formats:
+Open network (Vulnerable) — link‑layer is open (no Wi‑Fi encryption). This is a possible issue; an open network might be a captive portal or intentionally open.
 
-Human-readable output.
+Possible Evil Twin (Same SSID, different BSSID) — same network name seen from different access point MACs in the same scan.
 
-JSON output for tools or further processing.
+Why this is passive and safe
 
-Supports a whitelist of trusted networks and a list of suspicious name patterns.
+The program only listens to Wi‑Fi beacons. It does not attempt to join or send data to any Wi‑Fi network.
+
+Alerts are heuristic indicators for manual follow-up, not definitive proof that a network is malicious.
 
 Requirements
 
-ESP32 development board.
+ESP32 development board
 
-Arduino IDE with ESP32 board package installed.
+Arduino IDE (or PlatformIO) with ESP32 board support installed
 
-USB cable for flashing and monitoring.
+USB cable to flash the board and open the serial monitor
 
-Setup
+How to run
 
-Clone or download this repository.
+Open Arduino IDE.
 
-Open the code in Arduino IDE.
+Select your ESP32 board under Tools > Board.
 
-Select your ESP32 board in Tools > Board.
+Copy the sketch into the IDE (or open the provided .ino file).
 
-Upload the code.
+Upload to your ESP32.
 
-Open Serial Monitor at 115200 baud to see results.
+Open the Serial Monitor at 115200 baud.
 
-Example Output
-Found 3 Wi-Fi networks:
-1) Free_WiFi_Airport | RSSI: -60 dBm | Open | BSSID: 62:22:32:9B:35:2A
-   -> Risk: High
-2) MyHomeNetwork | RSSI: -40 dBm | WPA2 | BSSID: 82:14:67:AC:11:4B
-   -> Risk: Low
+Walk around or place the board in the area you want to scan. Results will print every few seconds.
 
+Serial monitor example
+SSID: MyHomeNetwork | BSSID: AA:BB:CC:11:22:33 | Signal: -42 dBm | Enc: Secure
+SSID: Free_Cafe_WiFi | BSSID: 44:55:66:77:88:99 | Signal: -68 dBm | Enc: Open
+ -> ALERT: Open network (Vulnerable)
+SSID: Free_Cafe_WiFi | BSSID: 66:55:44:33:22:11 | Signal: -80 dBm | Enc: Open
+ -> ALERT: Possible Evil Twin (Same SSID, different BSSID)
+-----------------------
 
-JSON output:
+Notes and limitations
 
-{"ts":241172,"ssid":"Free_WiFi_Airport","bssid":"62:22:32:9B:35:2A","rssi":-60,"enc":"Open","risk":"High"}
+Open ≠ always malicious. An open AP may be a captive portal (requires a web login) or intentionally open. The scanner reports potential issues for manual checking.
 
-Limitations
+Evil twin detection is heuristic. Many legitimate networks use multiple APs with the same SSID (mesh or enterprise deployments). Alerts can be false positives.
 
-The project only uses passive scanning.
+This tool is for awareness, testing, education, and field surveys. Do not use it to perform active probing or automatic connections to unknown networks without consent.
 
-It cannot detect captive portals (for example, airport Wi-Fi that shows a login page after connecting).
+Suggested improvements (optional)
 
-Encryption type is only an indicator. A WPA2 network may still be unsafe if it is a fake hotspot.
+Add a small history buffer and only alert after the condition appears in consecutive scans (reduces false positives).
 
-BSSID helps distinguish real from fake networks, but advanced attackers can still spoof MAC addresses.
+Save logs as CSV/JSON for later analysis.
 
-Future Work
-
-Add captive portal detection by attempting active connection tests.
-
-Create a dashboard or app to display results more clearly.
-
-Add advanced risk detection techniques.
+Add channel information or basic statistics about channel congestion.
