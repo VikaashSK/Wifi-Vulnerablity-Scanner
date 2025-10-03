@@ -22,7 +22,6 @@ void loop() {
     String bssid = WiFi.BSSIDstr(i);
     int rssi = WiFi.RSSI(i);
     wifi_auth_mode_t enc = WiFi.encryptionType(i);
-
     String encStr = (enc == WIFI_AUTH_OPEN) ? "Open" : "Secure";
 
     Serial.print("SSID: "); Serial.print(ssid);
@@ -34,10 +33,20 @@ void loop() {
       Serial.println(" -> ALERT: Open network (Vulnerable)");
     }
 
+    // Check for Evil Twin only once
+    bool evilTwinFound = false;
     for (int j = i + 1; j < n; j++) {
-      if (ssid == WiFi.SSID(j) && bssid != WiFi.BSSIDstr(j)) {
-        Serial.println(" -> ALERT: Possible Evil Twin (Same SSID, different BSSID)");
+      String otherSSID = WiFi.SSID(j);
+      String otherBSSID = WiFi.BSSIDstr(j);
+      if (ssid == otherSSID && bssid != otherBSSID) {
+        evilTwinFound = true;
+        break; // stop checking further for this SSID
       }
+    }
+
+    if (evilTwinFound) {
+      Serial.print(" -> ALERT: Possible Evil Twin detected for SSID: ");
+      Serial.println(ssid);
     }
   }
 
